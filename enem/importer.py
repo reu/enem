@@ -102,7 +102,7 @@ if __name__ == "__main__":
     from optparse import OptionParser
 
     parser = OptionParser(usage="enem.importer [options] <filename>")
-    parser.add_option("-c", "--city", action="store_true", dest="city", help="Import city file")
+    parser.add_option("-s", "--schools", action="store_true", dest="schools", help="Import schools file")
     parser.add_option("-e", "--enem", action="store_true", dest="enem", help="Import ENEM grades file")
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="Verbose mode")
 
@@ -111,13 +111,13 @@ if __name__ == "__main__":
     if len(args) != 1:
         parser.error("Incorrect number of arguments")
 
-    if options.city and options.enem:
-        parser.error("You can import a city file OR a ENEM grade file")
+    if options.schools and options.enem:
+        parser.error("You can import a schools file OR a ENEM grade file")
 
     connect(environ.get("MONGO_URL", "geekie_development"))
 
-    if options.city: importer = SchoolImporter()
-    if options.enem: importer = GradeImporter()
+    if options.schools: importer = SchoolImporter()
+    if options.enem:    importer = GradeImporter()
 
     if options.verbose:
         importer.logger.level = logging.DEBUG
