@@ -4,7 +4,7 @@ import sys
 from enem.parser import parse_file
 from enem.models import City, School, State, Grade
 
-class BaseImporter(object):
+class Importer(object):
     def __init__(self, logger=logging.getLogger("enem.importer")):
         # Initialize a stdout logger
         self.logger = logger
@@ -16,7 +16,7 @@ class BaseImporter(object):
     def debug(self, message):
         self.logger.debug(message)
 
-class SchoolImporter(BaseImporter):
+class SchoolImporter(Importer):
     def process(self, data):
         (state, created) = State.objects.get_or_create(acronym=data[0])
         (city, created) = City.objects.get_or_create(code=data[1], defaults={"name": data[2], "state": data[0]})
@@ -32,7 +32,7 @@ class SchoolImporter(BaseImporter):
 
         self.log("{} schools imported.".format(count))
 
-class GradeImporter(BaseImporter):
+class GradeImporter(Importer):
     def process(self, data):
         # Warning: Naive non thread-safe code above
         school = self._get_school(data["school"])
