@@ -1,4 +1,8 @@
 (function() {
+  /**
+   * @class Histogram
+   * A histogram that compares two frequencies.
+   */
   var Histogram = function() {
     this.items = {};
   }
@@ -6,11 +10,12 @@
   /**
    * Adds an item to this histogram. If the item already exists, its
    * data will be replaced.
-   * @param {String} id the item id
+   * @param {String} side left or right side
    * @param {Array} frequency the grades frequency
    */
-  Histogram.prototype.addItem = function(id, frequency) {
-    this.items[id] = frequency;
+  Histogram.prototype.addItem = function(side, frequency) {
+    if (side != "left" && side != "right") throw "Invalid side: use 'left' or 'right'";
+    this.items[side] = frequency;
   }
 
   /**
