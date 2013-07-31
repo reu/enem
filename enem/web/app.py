@@ -4,7 +4,7 @@ from mongoengine import connect
 from mongoengine.queryset import DoesNotExist
 from ..models import State, City, School
 
-connect(environ.get("MONGO_URL", "geekie_development"))
+connect("geekie_development", host=environ.get("MONGO_URL", "localhost"))
 
 app = Flask(__name__, static_url_path="")
 

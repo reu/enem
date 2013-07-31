@@ -114,7 +114,7 @@ if __name__ == "__main__":
     if options.schools and options.enem:
         parser.error("You can import a schools file OR a ENEM grade file")
 
-    connect(environ.get("MONGO_URL", "geekie_development"))
+    connect("geekie_development", host=environ.get("MONGO_URL", "localhost"))
 
     if options.schools: importer = SchoolImporter()
     if options.enem:    importer = GradeImporter()
