@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ENEM Microdata</title>
+
+    <link href="/css/bootstrap.css" rel="stylesheet">
+    <link href="/css/histograms.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="description">
+        <h1>ENEM Microdata</h1>
+        <p class="lead">Comparativo entre Escolas e Cidades no resultado das provas de Matemática do ENEM 2011.
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6">
+          <form action="/cities" method="get" accept-charset="utf-8">
+            <fieldset>
+              <legend>Cidade</legend>
+              <div class="form-group">
+                <select name="city_code" class="form-control">
+                  {% for city in cities %}
+                    <option value="{{ city.code }}">{{city.name}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+        <div class="col-lg-6">
+          <form action="/schools" method="get" accept-charset="utf-8">
+            <fieldset>
+              <legend>Escola</legend>
+              <div class="form-group">
+                <select name="school_code" class="form-control">
+                  {% for school in schools %}
+                    {% if school.grades: %}
+                      <option value="{{ school.code }}">{{school.name}}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-12" id="histogram"></div>
+
+    <script src="/javascripts/jquery.min.js"></script>
+    <script src="/javascripts/highcharts.js"></script>
+    <script src="/javascripts/histogram.js"></script>
+    <script src="/javascripts/histograms.js"></script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+.description {
+  padding: 20px 15px;
+  text-align: center;
+}
+
+#histogram {
+  height: 380px;
+  padding-top: 30px;
+}
