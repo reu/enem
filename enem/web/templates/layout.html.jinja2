@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ENEM Microdata</title>
+
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/typeahead.css" rel="stylesheet">
+    <link href="/css/histograms.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="description">
+        <h1>ENEM Microdata</h1>
+        <p class="lead">Comparativo entre Escolas e Cidades no resultado das provas de Matemática do ENEM 2011.
+      </div>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="//code.highcharts.com/highcharts.js"></script>
+    <script src="/javascripts/typeahead.min.js"></script>
+    <script src="/javascripts/highcharts.js"></script>
+    <script src="/javascripts/histogram.js"></script>
+    <script src="/javascripts/histograms.js"></script>
+  </body>
+</html>
