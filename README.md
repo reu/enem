@@ -3,6 +3,8 @@ A proposta do projeto é poder visualizar os dados dos ENEMS de forma comparar e
 
 Por hora, apenas a cidade de São Paulo está sendo contemplada.
 
+[![Build Status](https://travis-ci.org/reu/enem.png)](https://travis-ci.org/reu/enem)
+
 ## Instalação
 
 `pip install -r requirements.txt`
