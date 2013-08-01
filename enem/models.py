@@ -34,15 +34,23 @@ class _Gradeable(object):
     grades = MapField(field=EmbeddedDocumentField(Grade))
 
 class State(Document, _Gradeable):
-    acronym = StringField(required=True)
+    acronym = StringField(required=True, unique=True)
+
+    meta = {"indexes": [{"fields": ["acronym"], "unique": True }]}
 
 class City(Document, _Gradeable):
     name = StringField(required=True)
     state = StringField(required=True)
-    code = IntField(required=True)
+    code = IntField(required=True, unique=True)
+
+    meta = {"indexes": [{"fields": ["code"], "unique": True },
+                        {"fields": ["state", "name"]}]}
 
 class School(Document, _Gradeable):
     name = StringField(required=True)
-    code = IntField(required=True)
+    code = IntField(required=True, unique=True)
     city_code = IntField(required=True)
     state = StringField(required=True)
+
+    meta = {"indexes": [{"fields": ["code"], "unique": True },
+                        {"fields": ["state", "city_code", "name"]}]}
