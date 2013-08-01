@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from os import environ
 from mongoengine import connect
 from mongoengine.queryset import DoesNotExist
@@ -39,6 +39,13 @@ def school_histogram(school_code, year=2011, area="math"):
                      relativeGrades=[x * 100 / sum(grades) for x in grades])
     except DoesNotExist, KeyError:
         return "Not found", 404
+
+@app.route("/schools/search")
+def search_school():
+    term = request.args.get("term").upper()
+    schools = School.objects(name__contains=term, grades__2011__exists=True).order_by("name")
+
+    return jsonify(schools=[(school.code, school.name) for school in schools[:10]])
 
 if __name__ == "__main__":
     app.run()

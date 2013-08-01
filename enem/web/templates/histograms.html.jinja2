@@ -7,6 +7,7 @@
     <title>ENEM Microdata</title>
 
     <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/typeahead.css" rel="stylesheet">
     <link href="/css/histograms.css" rel="stylesheet">
   </head>
 
@@ -39,13 +40,7 @@
             <fieldset>
               <legend>Escola</legend>
               <div class="form-group">
-                <select name="school_code" class="form-control">
-                  {% for school in schools %}
-                    {% if school.grades: %}
-                      <option value="{{ school.code }}">{{school.name}}</option>
-                    {% endif %}
-                  {% endfor %}
-                </select>
+                <input name="school_code" class="form-control">
               </div>
             </fieldset>
           </form>
@@ -57,6 +52,8 @@
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="//code.highcharts.com/highcharts.js"></script>
+    <script src="/javascripts/typeahead.min.js"></script>
+    <script src="/javascripts/highcharts.js"></script>
     <script src="/javascripts/histogram.js"></script>
     <script src="/javascripts/histograms.js"></script>
   </body>
