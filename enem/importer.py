@@ -1,7 +1,9 @@
 import csv
 import logging
 import sys
-from enem.parser import parse_file
+from multiprocessing.queues import Queue
+from multiprocessing import Process
+from enem.parser import parse_line
 from enem.models import City, School, State, Grade
 
 class Importer(object):
@@ -33,60 +35,71 @@ class SchoolImporter(Importer):
         self.log("{} schools imported.".format(count))
 
 class GradeImporter(Importer):
-    def process(self, data):
-        # Warning: Naive non thread-safe code above
-        school = self._get_school(data["school"])
-        city   = self._get_city(data["city"])
-        state  = self._get_state(data["state"])
-
-        ns_range = self._range_for_grade(data["nature_science_grade"])
-        hs_range = self._range_for_grade(data["human_science_grade"])
-        ln_range = self._range_for_grade(data["languages_grade"])
-        mt_range = self._range_for_grade(data["math_grade"])
-
-        for gradeable in [school, city, state]:
-            try:
-                grade = gradeable.grades[str(data["year"])]
-            except KeyError:
-                grade = gradeable.grades[str(data["year"])] = Grade()
-
-            grade.nature_science[ns_range] += 1
-            grade.human_science[hs_range] += 1
-            grade.languages[ln_range] += 1
-            grade.math[mt_range] += 1
-
-            gradeable.save()
+    def __init__(self, workers_count=10):
+        self.workers_count = workers_count
 
     def import_file(self, file):
-        self.log("Importing ENEM grades from file {}".format(file.name))
+        self._import_schools(file)
+        self._import_cities()
+        self._import_states()
 
-        count, fail = 0, 0
-        for result in parse_file(file):
-            try:
-                self.process(result)
-                self.debug("{} {} {} {} {} {} {}".format(result["state"],
-                                                         result["city"],
-                                                         result["school"],
-                                                         result["nature_science_grade"],
-                                                         result["human_science_grade"],
-                                                         result["languages_grade"],
-                                                         result["math_grade"]))
-            except Exception:
-                self.log("error importing line")
-                fail += 1
+    def _import_schools(self, file):
+        data_queue = Queue(100)
+        workers = list()
 
-            count += 1
+        for i in range(self.workers_count):
+            worker = Process(target=self._process_schools, args=(data_queue, ))
+            workers.append(worker)
+            worker.start()
 
-        self.log("{} ENEM grades imported. {} failed.".format(count - fail, fail))
+        for line in file: data_queue.put(line)
 
-    def _get_school(self, school_code):
-        return School.objects.get(code=school_code)
+        while True:
+            if data_queue.empty():
+                for worker in workers:
+                    worker.terminate()
+                break
 
-    def _get_city(self, city_code):
-        return City.objects.get(code=city_code)
+    def _process_schools(self, queue):
+        while True:
+            data = parse_line(queue.get())
+            if data is None: continue
 
-    def _get_state(self, acronym):
-        return State.objects.get(acronym=acronym)
+            year = data["year"]
+
+            ns_range = self._range_for_grade(data["nature_science_grade"])
+            hs_range = self._range_for_grade(data["human_science_grade"])
+            ln_range = self._range_for_grade(data["languages_grade"])
+            mt_range = self._range_for_grade(data["math_grade"])
+
+            School.objects(code=data["school"]).update(**{
+                      "inc__grades__{}__nature_science__{}".format(year, ns_range): 1,
+                      "inc__grades__{}__human_science__{}".format(year, hs_range): 1,
+                      "inc__grades__{}__languages__{}".format(year, ln_range): 1,
+                      "inc__grades__{}__math__{}".format(year, mt_range): 1
+                  })
+
+    def _import_cities(self):
+        for city in City.objects:
+            for school in School.objects(city_code=city.code):
+                for subject in ["nature_science", "human_science", "languages", "math"]:
+                    try:
+                      grades = school.grades["2011"][subject]
+                      for range in grades.keys():
+                          city.update(**{"inc__grades__2011__{}__{}".format(subject, range): grades[range]})
+                    except KeyError:
+                        continue
+
+    def _import_states(self):
+        for state in State.objects:
+            for city in City.objects(state=state.acronym):
+                for subject in ["nature_science", "human_science", "languages", "math"]:
+                    try:
+                      grades = city.grades["2011"][subject]
+                      for range in grades.keys():
+                          state.update(**{"inc__grades__2011__{}__{}".format(subject, range): grades[range]})
+                    except KeyError:
+                        continue
 
     def _range_for_grade(self, grade):
         # The geniuses who got 1000 are put in the same group of the
@@ -104,7 +117,6 @@ if __name__ == "__main__":
     parser = OptionParser(usage="enem.importer [options] <filename>")
     parser.add_option("-s", "--schools", action="store_true", dest="schools", help="Import schools file")
     parser.add_option("-e", "--enem", action="store_true", dest="enem", help="Import ENEM grades file")
-    parser.add_option("-v", "--verbose", action="store_true", dest="verbose", help="Verbose mode")
 
     (options, args) = parser.parse_args()
 
@@ -117,11 +129,6 @@ if __name__ == "__main__":
     connect("geekie_development", host=environ.get("MONGO_URL", "localhost"))
 
     if options.schools: importer = SchoolImporter()
-    if options.enem:    importer = GradeImporter()
-
-    if options.verbose:
-        importer.logger.level = logging.DEBUG
-    else:
-        importer.logger.level = logging.INFO
+    if options.enem:    importer = MultiProcessSchoolImporter(10)
 
     with open(args[0]) as file: importer.import_file(file)

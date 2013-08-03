@@ -1,17 +1,17 @@
 from mongoengine import *
 
-class _FrequenceField(ListField):
+class _FrequencyField(DictField):
     """A custom mongoengine field which stores histogram frequencies."""
 
     def __init__(self, field=None, *args, **kwargs):
-        empty_frequence = [0 for x in xrange(10)]
-        super(_FrequenceField, self).__init__(field=field, default=empty_frequence, *args, **kwargs)
+        empty_frequency = { str(key): 0 for key in range(10) }
+        super(_FrequencyField, self).__init__(field=field, default=empty_frequency, *args, **kwargs)
 
 class Grade(EmbeddedDocument):
-    nature_science = _FrequenceField(required=True)
-    human_science = _FrequenceField(required=True)
-    languages = _FrequenceField(required=True)
-    math = _FrequenceField(required=True)
+    nature_science = _FrequencyField(required=True)
+    human_science = _FrequencyField(required=True)
+    languages = _FrequencyField(required=True)
+    math = _FrequencyField(required=True)
 
 class _Gradeable(object):
     """
@@ -21,7 +21,7 @@ class _Gradeable(object):
         {
             grades: {
                 "2009": {
-                    nature_science: [100, 32, 43, 21, 344, 21, 332, 44, 543, 112],
+                    nature_science: { "0": 10, "1": 4, "2": 5, "3": 10, "4": 100, "5": 150, "6": 30, "7": 50, "8": 90, "9": 1 }
                     ...
                 },
                 "2010": {
